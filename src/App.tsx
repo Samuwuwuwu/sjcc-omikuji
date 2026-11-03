@@ -246,7 +246,7 @@ export default function App() {
     setSaveMessage('')
     try {
       const result = await shareFortune(imageFile)
-      if (alive.current && result === 'downloaded') setSaveMessage('Saved. Tag @sjccnyp when you post.')
+      if (alive.current && result === 'downloaded') setSaveMessage('Story image saved.')
     } catch {
       if (alive.current) setSaveMessage('Couldn’t share. Try saving the image.')
     } finally {
@@ -272,7 +272,10 @@ export default function App() {
       <header className="site-header">
         <div className="brand">
           <img src="/sakuran-logo.png" width="46" height="46" alt="Sakuran Japanese Culture Club" />
-          <h1>Spectrum 2026</h1>
+          <div className="brand-caption">
+            <h1>Spectrum 2026</h1>
+            <a className="club-link" href="https://www.instagram.com/sjccnyp/" target="_blank" rel="noopener noreferrer">@sjccnyp</a>
+          </div>
         </div>
       </header>
 
@@ -344,13 +347,13 @@ export default function App() {
                   ) : isBad ? (
                     <p className="tying-note">Traditionally, unlucky omikuji are tied at shrines to leave bad luck behind.</p>
                   ) : <h2 className="ending-title">Keep your blessing</h2>}
-                  <div className="result-actions">
+                  <div className={`result-actions ${!isBad || isTied ? 'sharing-controls' : ''}`}>
                     {isBad && !isTied ? (
                       <button className="share-button tie-button" onClick={tieAway}>Tie away your bad luck</button>
                     ) : (
                       <>
-                        <button className="share-button" onClick={() => void share()} disabled={!imageFile || sharing}>
-                          <ShareIcon /><span>{sharing ? 'Sharing…' : 'Share'}</span>
+                        <button className="share-button" onClick={() => void share()} disabled={!imageFile || sharing} aria-busy={sharing} aria-label="Share fortune image" title="Share fortune image">
+                          <ShareIcon /><span>Share</span>
                         </button>
                         <button className="seal-button save-button" onClick={save} disabled={!imageFile || sharing} aria-label="Save image" title="Save image"><SaveIcon /></button>
                       </>

@@ -71,6 +71,10 @@ button:focus-visible { outline: 2px solid var(--fortune-accent, var(--color-verm
 .brand { display: flex; align-items: center; gap: 13px; }
 .brand img { display: block; width: 46px; height: 46px; object-fit: contain; }
 .brand h1 { margin: 0; font: 500 12px/1 var(--font-interface); text-transform: uppercase; letter-spacing: .12em; transition: color .25s; }
+.brand-caption { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.club-link { display: inline-flex; align-items: center; min-height: 22px; color: #756455; font-size: 11px; line-height: 1; text-decoration: none; text-underline-offset: 3px; }
+.club-link:hover { color: var(--color-vermilion); text-decoration: underline; }
+.club-link:focus-visible { outline: 2px solid var(--color-vermilion); outline-offset: 3px; }
 .phase-suspend .brand h1 { color: var(--color-paper); }
 .guide-trigger { position: fixed; top: max(16px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); z-index: 20; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid #a9433270; border-radius: 50%; background: var(--color-paper); color: var(--color-vermilion); transform: rotate(-6deg); transition: transform .18s, background .18s; }
 .guide-trigger::after { content: ''; position: absolute; inset: 4px; border: 1px dotted #a9433250; border-radius: 50%; pointer-events: none; }
@@ -177,6 +181,14 @@ button:focus-visible { outline: 2px solid var(--fortune-accent, var(--color-verm
 .seal-button:active { transform: rotate(-5deg) scale(.92); }
 .save-button:disabled, .share-button:disabled, .again-button:disabled { opacity: .5; cursor: default; transform: none; }
 .save-message { position: absolute; bottom: 0; width: 100%; margin: 0; color: var(--fortune-accent); text-align: center; font-size: 12px; line-height: 1.4; }
+.result-actions.sharing-controls { gap: 9px; }
+.sharing-controls .share-button { min-width: 154px; min-height: 54px; padding-inline: 23px; gap: 10px; font-size: 31px; }
+.sharing-controls .seal-button { width: 46px; min-width: 46px; height: 46px; }
+@media (max-width: 360px) {
+  .result-actions.sharing-controls { gap: 4px; }
+  .sharing-controls .share-button { min-width: 138px; padding-inline: 18px; font-size: 28px; }
+  .sharing-controls .seal-button { width: 44px; min-width: 44px; height: 44px; }
+}
 
 .paper-holder { position: absolute; inset: 0; display: grid; grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); place-items: center; pointer-events: none; z-index: 3; }
 .paper-fit { transform-origin: center; filter: drop-shadow(4px 17px 15px #473b2b24); }
