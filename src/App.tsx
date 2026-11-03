@@ -4,12 +4,13 @@ import { AnimatePresence, motion, useAnimationControls, useReducedMotion } from 
 import { FortuneBox } from './components/FortuneBox'
 import { FoldingPaper } from './components/FoldingPaper'
 import { RitualEffects } from './components/RitualEffects'
+import { OmikujiRack } from './components/OmikujiRack'
 import { AgainIcon, SaveIcon, ShareIcon, SparkIcon } from './components/Icons'
 import { drawFortune, fortuneColors } from './data/fortunes'
 import type { Fortune } from './data/fortunes'
 import { createFortuneImage, downloadFortune, shareFortune } from './lib/exportFortune'
 
-type Stage = 'draw' | 'reveal' | 'fortune'
+type Stage = 'draw' | 'reveal' | 'fortune' | 'tying' | 'tied'
 export type RevealPhase = 'idle' | 'charge' | 'suspend' | 'burst' | 'open' | 'settled'
 const ease = [0.16, 1, 0.3, 1] as const
 
@@ -28,11 +29,16 @@ export default function App() {
   const stageElement = useRef<HTMLDivElement>(null)
   const boxButton = useRef<HTMLButtonElement>(null)
   const [paperScale, setPaperScale] = useState(1)
+  const paperScaleRef = useRef(1)
   const [paperInFront, setPaperInFront] = useState(false)
+  const rackAnchor = useRef<SVGCircleElement>(null)
+  const tiedEnding = useRef<HTMLHeadingElement>(null)
+  const tieLocked = useRef(false)
   const box = useAnimationControls()
   const paper = useAnimationControls()
   const topFold = useAnimationControls()
   const bottomFold = useAnimationControls()
+  const knot = useAnimationControls()
   const reduceMotion = useReducedMotion()
 
   useEffect(() => {
@@ -85,7 +91,7 @@ export default function App() {
         if (cancelled) return
         setPhase('open')
         await Promise.all([
-          paper.start({ y: 0, rotate: -3, scale: 1, transition: { type: 'spring', stiffness: 220, damping: 19, mass: 0.85 } }),
+          paper.start({ y: 0, rotate: -1.5, scale: 1, transition: { type: 'spring', stiffness: 220, damping: 19, mass: 0.85 } }),
           topFold.start({ rotateX: [-179.5, -80, 8, 0], transition: { duration: 0.6, times: [0, 0.38, 0.8, 1], ease: 'easeInOut' } }),
           bottomFold.start({ rotateX: [179.5, 75, -6, 0], transition: { duration: 0.58, delay: 0.08, times: [0, 0.38, 0.8, 1], ease: 'easeInOut' } }),
         ])
@@ -100,11 +106,61 @@ export default function App() {
     return () => { cancelled = true }
   }, [stage, reduceMotion, box, paper, topFold, bottomFold])
 
+  useEffect(() => {
+    if (stage !== 'tying') return
+    let cancelled = false
+
+    async function tiePaper() {
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+      if (cancelled) return
+      if (reduceMotion) {
+        await Promise.all([
+          paper.start({ opacity: 0, transition: { duration: 0.15 } }),
+          knot.start('tied'),
+        ])
+      } else {
+        await Promise.all([
+          paper.start({ rotate: 0, y: 0, transition: { duration: 0.4, ease } }),
+          topFold.start({ rotateX: -179.5, transition: { duration: 0.48, ease } }),
+          bottomFold.start({ rotateX: 179.5, transition: { duration: 0.48, delay: 0.1, ease } }),
+        ])
+        if (cancelled) return
+        const anchor = rackAnchor.current?.getBoundingClientRect()
+        const scene = stageElement.current?.getBoundingClientRect()
+        const scale = paperScaleRef.current
+        const rackScale = (rackAnchor.current?.ownerSVGElement?.getBoundingClientRect().width ?? 520) / 520
+        const paperWidth = paperElement.current?.offsetWidth ?? 360
+        const paperHeight = paperElement.current?.offsetHeight ?? 600
+        const x = anchor && scene ? (anchor.x + anchor.width / 2 - scene.x - scene.width / 2) / scale : 0
+        const y = anchor && scene ? (anchor.y + anchor.height / 2 - scene.y - scene.height / 2) / scale : -45
+        await paper.start({
+          x, y, scale: (100 * rackScale) / (paperWidth * scale), scaleY: 0.42 * paperWidth / paperHeight, rotate: 0,
+          transition: { duration: 0.55, ease },
+        })
+        if (cancelled) return
+        await Promise.all([
+          paper.start({ opacity: 0, transition: { duration: 0.12 } }),
+          knot.start('tied'),
+        ])
+      }
+      if (!cancelled) setStage('tied')
+    }
+
+    void tiePaper()
+    return () => { cancelled = true }
+  }, [stage, reduceMotion, paper, topFold, bottomFold, knot])
+
   useLayoutEffect(() => {
     if (stage === 'draw' || !stageElement.current || !paperElement.current) return
     const container = stageElement.current
     const result = paperElement.current
-    const fit = () => setPaperScale(Math.max(0.1, Math.min(1, (container.clientHeight - 34) / result.offsetHeight, (container.clientWidth - 48) / result.offsetWidth)))
+    const fit = () => {
+      const widthScale = (container.clientWidth - 30) / result.offsetWidth
+      const heightScale = (container.clientHeight - 28) / result.offsetHeight
+      const scale = Math.max(0.1, Math.min(1, heightScale, widthScale))
+      paperScaleRef.current = scale
+      setPaperScale(scale)
+    }
     fit()
     const observer = new ResizeObserver(fit)
     observer.observe(container)
@@ -154,7 +210,8 @@ export default function App() {
 
   function reset() {
     box.set({ opacity: 1, rotate: 0, x: 0, y: 0, scale: 1 })
-    paper.set({ opacity: 0 })
+    paper.set({ opacity: 0, scale: 1, scaleY: 1, x: 0, y: 0, rotate: 0 })
+    tieLocked.current = false
     locked.current = false
     taps.current = 0
     setTapCount(0)
@@ -167,14 +224,22 @@ export default function App() {
 
   const imageFile = preparedImage?.fortuneId === fortune?.id ? preparedImage?.file : undefined
 
+  function tieAway() {
+    if (stage !== 'fortune' || fortune?.id !== 'kyo' || tieLocked.current) return
+    tieLocked.current = true
+    setSaveMessage('')
+    stageElement.current?.scrollTo({ top: 0, behavior: 'auto' })
+    setStage('tying')
+  }
+
   function save() {
-    if (!imageFile) return
+    if (!imageFile || (fortune?.id === 'kyo' && stage !== 'tied')) return
     downloadFortune(imageFile)
     setSaveMessage('Saved.')
   }
 
   async function share() {
-    if (!imageFile || sharing) return
+    if (!imageFile || sharing || (fortune?.id === 'kyo' && stage !== 'tied')) return
     setSharing(true)
     setSaveMessage('')
     try {
@@ -188,6 +253,10 @@ export default function App() {
   }
 
   const isFortune = stage === 'fortune'
+  const isBad = fortune?.id === 'kyo'
+  const isTying = stage === 'tying'
+  const isTied = stage === 'tied'
+  const hasEnding = isFortune || isTying || isTied
   const colors = fortuneColors(stage === 'draw' ? undefined : fortune?.id)
   const sceneStyle = { '--fortune-accent': colors.accent, '--fortune-tint': colors.tint } as CSSProperties
 
@@ -205,23 +274,29 @@ export default function App() {
       </header>
 
       <main className="main-composition">
-        <section className="ritual" aria-label="Draw your Japanese fortune" aria-busy={stage === 'reveal'}>
-          <div ref={stageElement} className={`fortune-stage ${stage} charge-${tapCount}`}>
+        <section className={`ritual ${hasEnding ? 'has-ending' : ''}`} aria-label="Draw your Japanese fortune" aria-busy={stage === 'reveal' || isTying}>
+          <div ref={stageElement} className={`fortune-stage ${stage} charge-${tapCount}`} style={{ '--paper-scale': paperScale } as CSSProperties}>
             <motion.div className="ritual-title" aria-hidden="true"
               animate={{ opacity: stage === 'draw' ? 1 : 0, y: stage === 'draw' || reduceMotion ? 0 : -18 }}
               transition={{ duration: 0.28, ease }}>Omikuji<span className="title-star"><SparkIcon /></span></motion.div>
 
             <motion.div className="sun-disc" aria-hidden="true"
               animate={{
-                opacity: phase === 'suspend' ? 0.32 : isFortune ? 0.38 : 1,
-                scale: reduceMotion ? 1 : isFortune ? 1.13 : 1 + tapCount * 0.075,
+                opacity: phase === 'suspend' ? 0.32 : hasEnding ? 0.38 : 1,
+                scale: reduceMotion ? 1 : hasEnding ? 1.13 : 1 + tapCount * 0.075,
                 rotate: reduceMotion ? 0 : tapCount * 14,
               }}
               transition={{ duration: reduceMotion ? 0.15 : 0.5, ease }} />
 
-            <RitualEffects taps={tapCount} phase={phase} reduced={!!reduceMotion} />
+            {(stage === 'draw' || stage === 'reveal') && <RitualEffects taps={tapCount} phase={phase} reduced={!!reduceMotion} />}
 
-            <motion.div className="box-wrap" animate={box} initial={{ opacity: 1 }} aria-hidden={stage !== 'draw'}>
+            {(isTying || isTied) && (
+              <motion.div className="rack-scene" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: reduceMotion ? 0.15 : 0.45 }}>
+                <OmikujiRack knot={knot} anchorRef={rackAnchor} reduced={!!reduceMotion} />
+              </motion.div>
+            )}
+
+            {(stage === 'draw' || stage === 'reveal') && <motion.div className="box-wrap" animate={box} initial={{ opacity: 1 }} aria-hidden={stage !== 'draw'}>
               <motion.button ref={boxButton} className="box-button" onClick={tapBox}
                 disabled={stage !== 'draw'}
                 aria-label={`Tap the fortune box. ${3 - tapCount} ${3 - tapCount === 1 ? 'tap' : 'taps'} remaining.`}
@@ -230,13 +305,13 @@ export default function App() {
                 transition={{ duration: 0.2, ease }}>
                 <FortuneBox />
               </motion.button>
-            </motion.div>
+            </motion.div>}
 
-            {fortune && stage !== 'draw' && (
+            {fortune && stage !== 'draw' && !isTied && (
               <div className="paper-holder" style={{ zIndex: paperInFront ? 3 : 1 }}>
                 <div className="paper-fit" style={{ transform: `scale(${paperScale})` }}>
                   <motion.div className="paper-motion" animate={paper} initial={{ opacity: 0 }}>
-                    <FoldingPaper fortune={fortune} revealed={isFortune} paperRef={paperElement} topFold={topFold} bottomFold={bottomFold} />
+                    <FoldingPaper fortune={fortune} revealed={isFortune} folding={isTying} paperRef={paperElement} topFold={topFold} bottomFold={bottomFold} />
                   </motion.div>
                 </div>
               </div>
@@ -254,16 +329,29 @@ export default function App() {
                   <p>{tapCount === 0 ? 'Tap the box' : tapCount === 1 ? 'Keep going' : 'One more'}</p>
                 </motion.div>
               )}
-              {isFortune && (
-                <motion.div key="result" className="result-actions"
+              {(isFortune || isTied) && (
+                <motion.div key={isTied ? 'tied' : 'result'} className="fortune-ending"
                   initial={{ opacity: 0, y: reduceMotion ? 0 : 14 }} animate={{ opacity: 1, y: 0 }}
-                  onAnimationComplete={() => paperElement.current?.focus({ preventScroll: true })}
+                  onAnimationComplete={() => (isTied ? tiedEnding.current : paperElement.current)?.focus({ preventScroll: true })}
                   transition={{ duration: 0.35, ease }}>
-                  <button className="share-button" onClick={() => void share()} disabled={!imageFile || sharing}>
-                    <ShareIcon /><span>{sharing ? 'Sharing…' : 'Share'}</span>
-                  </button>
-                  <button className="seal-button save-button" onClick={save} disabled={!imageFile || sharing} aria-label="Save image" title="Save image"><SaveIcon /></button>
-                  <button className="seal-button again-button" onClick={reset} disabled={sharing} aria-label="Draw again" title="Draw again"><AgainIcon /></button>
+                  {isTied ? (
+                    <h2 ref={tiedEnding} className="ending-title" tabIndex={-1}>Bad luck, tied away.</h2>
+                  ) : isBad ? (
+                    <p className="tying-note">Traditionally, unlucky omikuji are tied at shrines to leave bad luck behind.</p>
+                  ) : <h2 className="ending-title">Keep your blessing</h2>}
+                  <div className="result-actions">
+                    {isBad && !isTied ? (
+                      <button className="share-button tie-button" onClick={tieAway}>Tie away your bad luck</button>
+                    ) : (
+                      <>
+                        <button className="share-button" onClick={() => void share()} disabled={!imageFile || sharing}>
+                          <ShareIcon /><span>{sharing ? 'Sharing…' : 'Share'}</span>
+                        </button>
+                        <button className="seal-button save-button" onClick={save} disabled={!imageFile || sharing} aria-label="Save image" title="Save image"><SaveIcon /></button>
+                      </>
+                    )}
+                    <button className="seal-button again-button" onClick={reset} disabled={sharing} aria-label="Draw again" title="Draw again"><AgainIcon /></button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -273,7 +361,7 @@ export default function App() {
       </main>
 
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-        {isFortune && fortune ? `${fortune.japanese}. ${fortune.meaning}. ${fortune.message}` : stage === 'reveal' ? 'Your fortune is opening.' : tapCount > 0 ? `${tapCount} of 3 taps. ${3 - tapCount} remaining.` : 'Tap the box three times to reveal your fortune.'}
+        {isTied ? 'Your omikuji is tied to the rack. You can now share it.' : isTying ? 'Folding and tying your omikuji.' : isFortune && fortune ? `${fortune.japanese}. ${fortune.meaning}. ${fortune.message} ${fortune.predictions.map((prediction) => `${prediction.name}: ${prediction.text}`).join(' ')}` : stage === 'reveal' ? 'Your fortune is opening.' : tapCount > 0 ? `${tapCount} of 3 taps. ${3 - tapCount} remaining.` : 'Tap the box three times to reveal your fortune.'}
       </div>
     </div>
   )
