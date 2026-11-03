@@ -41,6 +41,7 @@ Prepared for Pages, **not deployed**.
 - Share passes the PNG and a caption containing `@sjccnyp` to the native Web Share API. The PNG also includes the handle. Unsupported or failed file sharing falls back to downloading; cancelling the share sheet does nothing. Instagram availability depends on the device and installed apps. Captions and real Instagram mention tags remain under the receiving app's control.
 - Image files are prepared during the reveal so native sharing starts directly from the user's tap, preserving browser user activation.
 - The complete paper fits the viewport without an internal scrollbar. The reveal and reading stages share the same dimensions and scale, avoiding a resize or reposition when the paper finishes opening.
+- The opened slip follows mouse movement or a single-finger drag with a gentle, spring-smoothed 3D tilt. It settles on release, cancellation, or pointer exit; reduced-motion mode keeps it still. Two-finger pinch zoom remains available.
 - Reduced-motion users keep the three-tap interaction, seal feedback, and both endings, with brief fades instead of spatial motion.
 - Keyboard focus, screen-reader announcements, and touch targets are included. No sound plays.
 - The small book seal in the top-right corner opens an optional cultural guide with Ritual, Grades, and Keep or tie sections. It links to JNTO, supports keyboard navigation and Escape, and returns you to the same point in your draw.

@@ -181,6 +181,13 @@ button:focus-visible { outline: 2px solid var(--fortune-accent, var(--color-verm
 .paper-holder { position: absolute; inset: 0; display: grid; grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); place-items: center; pointer-events: none; z-index: 3; }
 .paper-fit { transform-origin: center; filter: drop-shadow(4px 17px 15px #473b2b24); }
 .paper-motion { position: relative; width: 360px; transform-style: preserve-3d; perspective: 1400px; }
+.paper-tilt-surface, .paper-tilt { position: relative; width: 100%; transform-style: preserve-3d; }
+.paper-tilt-surface[data-active="true"] { pointer-events: auto; }
+.paper-tilt-surface[data-tilt="true"] { touch-action: pinch-zoom; cursor: grab; -webkit-tap-highlight-color: transparent; }
+.paper-tilt-surface[data-tilt="true"]:active { cursor: grabbing; }
+@media (hover: none) and (pointer: coarse) {
+  .paper-tilt-surface[data-tilt="true"] { user-select: none; -webkit-user-select: none; }
+}
 .fortune-paper { background: #fcf9f0; padding: 11px; width: 100%; height: 600px; position: relative; outline: none; clip-path: polygon(.5% 0, 99% .2%, 100% 13%, 99.6% 38%, 100% 69%, 99.5% 100%, 0 99.7%, .4% 77%, 0 53%, .5% 22%); }
 .fortune-paper::after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 200px 0 -199px #6b543a12, inset 0 400px 0 -399px #6b543a12; pointer-events: none; }
 .paper-inner { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px 16px; border: 1.5px solid var(--fortune-accent); height: 578px; }

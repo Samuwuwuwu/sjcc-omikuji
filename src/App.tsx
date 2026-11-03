@@ -6,6 +6,7 @@ import { FoldingPaper } from './components/FoldingPaper'
 import { RitualEffects } from './components/RitualEffects'
 import { OmikujiRack } from './components/OmikujiRack'
 import { OmikujiGuide } from './components/OmikujiGuide'
+import { TiltingPaper } from './components/TiltingPaper'
 import { AgainIcon, SaveIcon, ShareIcon, SparkIcon } from './components/Icons'
 import { drawFortune, fortuneColors } from './data/fortunes'
 import type { Fortune } from './data/fortunes'
@@ -313,7 +314,9 @@ export default function App() {
               <div className="paper-holder" style={{ zIndex: paperInFront ? 3 : 1 }}>
                 <div className="paper-fit" style={{ transform: `scale(${paperScale})` }}>
                   <motion.div className="paper-motion" animate={paper} initial={{ opacity: 0 }}>
-                    <FoldingPaper fortune={fortune} revealed={isFortune} folding={isTying} paperRef={paperElement} topFold={topFold} bottomFold={bottomFold} />
+                    <TiltingPaper active={isFortune} reduced={!!reduceMotion}>
+                      <FoldingPaper fortune={fortune} revealed={isFortune} folding={isTying} paperRef={paperElement} topFold={topFold} bottomFold={bottomFold} />
+                    </TiltingPaper>
                   </motion.div>
                 </div>
               </div>
