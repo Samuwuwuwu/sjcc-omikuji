@@ -15,9 +15,10 @@ const japanese = [...new Set((await sourceText('src')).match(/[\u3000-\u30ff\u34
 const latin = Array.from({ length: 95 }, (_, i) => String.fromCharCode(i + 32)).join('') + 'ūōŪŌ…’'
 
 for (const [family, filename, text, italic] of [
-  ['Cormorant Garamond', 'editorial-latin.woff2', latin, false],
-  ['DM Sans:wght@400;500;600', 'interface.woff2', latin, false],
+  ['Cormorant Garamond:wght@600', 'editorial-latin.woff2', latin, false],
+  ['DM Sans:wght@400..600', 'interface.woff2', latin, false],
   ['Shippori Mincho', 'japanese.woff2', japanese, false],
+  ['Shippori Mincho:wght@700', 'japanese-display.woff2', japanese, false],
 ]) {
   const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}${italic ? ':ital@1' : ''}&text=${encodeURIComponent(text)}&display=swap`
   const response = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36' } })

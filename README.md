@@ -33,13 +33,13 @@ Prepared for Pages, **not deployed**.
 
 ## Experience
 
-- Tap the box or draw button. The approximately three-second reveal shakes the box, draws a folded slip from behind its lid, and opens three hinged paper panels with a staggered spring finish.
+- Tap the box three times. Each tap adds a stronger shake, an expanding ink ring, and a lit seal. The third tap triggers a short suspended beat, a burst of rays and paper flecks, and a spring-driven three-panel reveal. No separate draw button is needed.
 - Six local, weighted fortunes live in `src/data/fortunes.ts`. An immediate redraw avoids repeating the previous result.
-- Save produces a 1080 × 1440 PNG using browser Canvas and the same local typefaces. Downloads follow the browser's usual save behavior.
+- Save produces a 1080 × 1440 poster with oversized Japanese lettering and the same local typefaces. Great blessing has a gold treatment; misfortune uses smoky ink. Downloads follow the browser's usual save behavior.
 - Share passes the PNG and a caption containing `@sjccnyp` to the native Web Share API. The PNG also includes the handle. Unsupported or failed file sharing falls back to downloading; cancelling the share sheet does nothing. Instagram availability depends on the device and installed apps. Captions and real Instagram mention tags remain under the receiving app's control.
 - Image files are prepared during the reveal so native sharing starts directly from the user's tap, preserving browser user activation.
 - The viewport and animation stage contain transformed artwork; the paper scales to fit the available space without page scroll.
-- Reduced-motion users get a brief fade instead of the shake and unfolding sequence.
+- Reduced-motion users keep the three-tap interaction and seal feedback, with a brief fade instead of the shake, particles, and unfolding sequence.
 - Keyboard focus, screen-reader announcements, and touch targets are included. No sound plays.
 
 ## Fonts

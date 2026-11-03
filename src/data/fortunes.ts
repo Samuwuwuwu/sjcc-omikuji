@@ -7,6 +7,12 @@ export type Fortune = {
   weight: number
 }
 
+export function fortuneColors(id?: string) {
+  if (id === 'daikichi') return { accent: '#926120', tint: '#eddbad' }
+  if (id === 'kyo') return { accent: '#4b4952', tint: '#d9d2de' }
+  return { accent: '#a94332', tint: '#e4b7a2' }
+}
+
 export const fortunes: readonly Fortune[] = [
   {
     id: 'daikichi',

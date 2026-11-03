@@ -1,7 +1,7 @@
 import type { Fortune } from '../data/fortunes'
+import { fortuneColors } from '../data/fortunes'
 
 const ink = '#302e29'
-const vermilion = '#a94332'
 
 function wrappedText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
   let line = ''
@@ -19,11 +19,12 @@ function wrappedText(ctx: CanvasRenderingContext2D, text: string, x: number, y: 
 
 /** Canvas uses local fonts and primitives; export needs no screenshot library or network. */
 export async function createFortuneImage(fortune: Fortune): Promise<File> {
+  const { accent, tint } = fortuneColors(fortune.id)
   const logo = new Image()
   logo.src = '/sakuran-logo.png'
   await Promise.all([
-    document.fonts.load('400 64px "Cormorant Garamond"'),
-    document.fonts.load(`400 180px "Shippori Mincho"`, fortune.japanese),
+    document.fonts.load('600 132px "Cormorant Garamond"'),
+    document.fonts.load(`700 304px "Shippori Mincho"`, fortune.japanese),
     document.fonts.load('400 34px "DM Sans"'),
     logo.decode(),
   ])
@@ -37,52 +38,64 @@ export async function createFortuneImage(fortune: Fortune): Promise<File> {
   ctx.fillStyle = '#f4f0e7'
   ctx.fillRect(0, 0, 1080, 1440)
 
-  // Deterministic paper flecks keep the keepsake tactile at full resolution.
-  let seed = 26
-  for (let i = 0; i < 24000; i++) {
-    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0
-    const x = (seed / 2 ** 32) * 1080
-    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0
-    const y = (seed / 2 ** 32) * 1440
-    ctx.fillStyle = i % 2 ? '#66513309' : '#ffffff65'
-    ctx.fillRect(x, y, 1.4, 1.4)
+  ctx.fillStyle = tint
+  ctx.globalAlpha = 0.5
+  ctx.beginPath()
+  ctx.arc(540, 505, 320, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.globalAlpha = 1
+
+  ctx.strokeStyle = accent
+  ctx.lineWidth = 3
+  ctx.strokeRect(55, 55, 970, 1330)
+  for (const [x, y] of [[55, 55], [1025, 1385]]) {
+    ctx.save()
+    ctx.translate(x, y)
+    ctx.rotate(Math.PI / 4)
+    ctx.fillStyle = accent
+    ctx.fillRect(-10, -10, 20, 20)
+    ctx.restore()
   }
 
-  ctx.strokeStyle = vermilion
-  ctx.lineWidth = 2
-  ctx.strokeRect(54, 54, 972, 1332)
-  ctx.strokeRect(65, 65, 950, 1310)
+  ctx.drawImage(logo, 343, 106, 70, 70)
+  ctx.fillStyle = ink
+  ctx.textAlign = 'left'
+  ctx.font = '500 25px "DM Sans", sans-serif'
+  ctx.fillText('SPECTRUM 2026', 437, 148)
+
   ctx.textAlign = 'center'
-  ctx.fillStyle = ink
-  ctx.font = '500 24px "DM Sans", sans-serif'
-  ctx.fillText('SPECTRUM 2026', 540, 137)
-  ctx.strokeStyle = '#a9433240'
+  ctx.fillStyle = accent
+  ctx.font = '500 27px "DM Sans", sans-serif'
+  ctx.fillText(fortune.reading.toUpperCase(), 540, 291)
+  ctx.font = `700 ${fortune.japanese.length === 1 ? 352 : 304}px "Shippori Mincho", serif`
+  ctx.fillText(fortune.japanese, 540, 628)
+  ctx.font = '600 132px "Cormorant Garamond", serif'
+  const meaningBottom = wrappedText(ctx, fortune.meaning, 540, 790, 800, 118)
+
+  const dividerY = meaningBottom + 62
+  ctx.strokeStyle = accent
+  ctx.globalAlpha = 0.5
+  ctx.lineWidth = 2
   ctx.beginPath()
-  ctx.moveTo(132, 183)
-  ctx.lineTo(948, 183)
+  ctx.moveTo(372, dividerY)
+  ctx.lineTo(500, dividerY)
+  ctx.moveTo(580, dividerY)
+  ctx.lineTo(708, dividerY)
   ctx.stroke()
+  ctx.globalAlpha = 1
+  ctx.save()
+  ctx.translate(540, dividerY)
+  ctx.rotate(Math.PI / 4)
+  ctx.fillRect(-8, -8, 16, 16)
+  ctx.restore()
 
-  ctx.fillStyle = vermilion
-  ctx.font = '400 28px "Cormorant Garamond", serif'
-  ctx.fillText(fortune.reading.toUpperCase(), 540, 288)
-  ctx.font = '400 200px "Shippori Mincho", serif'
-  ctx.fillText(fortune.japanese, 540, 520)
   ctx.fillStyle = ink
-  ctx.font = '400 66px "Cormorant Garamond", serif'
-  ctx.fillText(fortune.meaning, 540, 642)
+  ctx.font = '400 38px "DM Sans", sans-serif'
+  wrappedText(ctx, fortune.message, 540, dividerY + 84, 780, 57)
 
-  ctx.strokeStyle = '#a9433260'
-  ctx.beginPath()
-  ctx.moveTo(390, 713)
-  ctx.lineTo(690, 713)
-  ctx.stroke()
-  ctx.font = '400 34px "DM Sans", sans-serif'
-  wrappedText(ctx, fortune.message, 540, 808, 700, 54)
-
-  ctx.drawImage(logo, 484, 1200, 112, 112)
-  ctx.fillStyle = '#625c52'
-  ctx.font = '400 22px "DM Sans", sans-serif'
-  ctx.fillText('@sjccnyp', 540, 1340)
+  ctx.fillStyle = accent
+  ctx.font = '500 26px "DM Sans", sans-serif'
+  ctx.fillText('@sjccnyp', 540, 1318)
 
   const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((result) => result ? resolve(result) : reject(new Error('Could not create your image.')), 'image/png')
