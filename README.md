@@ -43,6 +43,7 @@ Prepared for Pages, **not deployed**.
 - The complete paper fits the viewport without an internal scrollbar. The reveal and reading stages share the same dimensions and scale, avoiding a resize or reposition when the paper finishes opening.
 - Reduced-motion users keep the three-tap interaction, seal feedback, and both endings, with brief fades instead of spatial motion.
 - Keyboard focus, screen-reader announcements, and touch targets are included. No sound plays.
+- The small book seal in the top-right corner opens an optional cultural guide with Ritual, Grades, and Keep or tie sections. It links to JNTO, supports keyboard navigation and Escape, and returns you to the same point in your draw.
 
 The short cultural note follows [JNTO's explanation of omikuji](https://faq.japan-travel.jnto.go.jp/en/japan-magazine/2007_omikuji/). The Spectrum predictions are original, playful writing, not translations of shrine-issued fortunes.
 

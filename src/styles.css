@@ -72,6 +72,56 @@ button:focus-visible { outline: 2px solid var(--fortune-accent, var(--color-verm
 .brand img { display: block; width: 46px; height: 46px; object-fit: contain; }
 .brand h1 { margin: 0; font: 500 12px/1 var(--font-interface); text-transform: uppercase; letter-spacing: .12em; transition: color .25s; }
 .phase-suspend .brand h1 { color: var(--color-paper); }
+.guide-trigger { position: fixed; top: max(16px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); z-index: 20; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid #a9433270; border-radius: 50%; background: var(--color-paper); color: var(--color-vermilion); transform: rotate(-6deg); transition: transform .18s, background .18s; }
+.guide-trigger::after { content: ''; position: absolute; inset: 4px; border: 1px dotted #a9433250; border-radius: 50%; pointer-events: none; }
+.guide-trigger:hover { transform: rotate(0); background: #fcf9f0; }
+.guide-trigger:active { transform: rotate(-3deg) scale(.94); }
+.guide-trigger:disabled { opacity: .4; }
+.omikuji-guide { --fortune-accent: var(--color-vermilion); position: fixed; inset: 0; width: min(520px, calc(100vw - 28px)); max-width: none; max-height: calc(100dvh - 28px); margin: auto; padding: 12px; border: 0; color: var(--color-ink); background: #fcf9f0; box-shadow: 10px 20px 60px #302e2933; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--color-vermilion) transparent; }
+.omikuji-guide::backdrop { background: #302e2975; }
+.omikuji-guide[open] { animation: guide-arrive .22s cubic-bezier(.16, 1, .3, 1); }
+.guide-paper { padding: 21px 24px 20px; border: 1px solid #a9433270; }
+.guide-header { position: relative; padding-right: 36px; }
+.guide-header h2 { margin: 0; font: 600 42px/1 var(--font-editorial); letter-spacing: -.03em; color: var(--color-vermilion); outline: none; text-wrap: balance; }
+.guide-close { position: absolute; top: -12px; right: -14px; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: var(--color-vermilion); }
+.guide-close:hover { background: #a943320a; border-radius: 50%; }
+.guide-tabs { display: flex; gap: 22px; margin: 24px 0 18px; border-bottom: 1px solid #a9433230; }
+.guide-tabs button { position: relative; min-height: 44px; padding: 0 0 8px; border: 0; background: transparent; color: #756455; font: 600 23px/1 var(--font-editorial); white-space: nowrap; }
+.guide-tabs button[aria-selected="true"] { color: var(--color-vermilion); }
+.guide-tabs button[aria-selected="true"]::after { content: ''; position: absolute; inset: auto 0 -1px; height: 2px; background: currentColor; }
+.guide-content { min-height: 255px; font-size: 16px; line-height: 1.65; outline-offset: 4px; }
+.guide-content p { margin: 0 0 15px; text-wrap: pretty; }
+.guide-content p:last-child { margin-bottom: 0; }
+.guide-content .guide-small { font-size: 13px; line-height: 1.5; color: #756455; }
+.guide-grades { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; margin: 16px 0; }
+.guide-grades > div { display: flex; align-items: center; gap: 11px; min-height: 41px; border-bottom: 1px solid #a9433220; padding-bottom: 7px; }
+.guide-grades dt { min-width: 42px; flex-shrink: 0; white-space: nowrap; color: var(--color-vermilion); font: 700 22px/1.2 var(--font-japanese); }
+.guide-grades dd { margin: 0; font-size: 13px; line-height: 1.3; }
+.guide-source { display: inline-flex; align-items: center; gap: 6px; margin-top: 18px; color: var(--color-vermilion); font-size: 12px; line-height: 1.5; text-decoration-color: #a9433260; text-underline-offset: 4px; }
+.guide-source:hover { text-decoration-color: currentColor; }
+.guide-source:focus-visible { outline: 2px solid var(--color-vermilion); outline-offset: 5px; }
+@keyframes guide-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 600px) {
+  .guide-trigger { top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); }
+  .guide-paper { padding: 21px 18px 18px; }
+  .guide-header h2 { font-size: 38px; }
+  .guide-tabs { gap: 18px; margin-top: 18px; }
+  .guide-tabs button { font-size: 22px; }
+  .guide-content { min-height: 277px; font-size: 15px; line-height: 1.6; }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .omikuji-guide { width: min(720px, calc(100vw - 28px)); }
+  .guide-paper { padding: 14px 22px; }
+  .guide-header h2 { font-size: 34px; }
+  .guide-tabs { margin: 8px 0 10px; }
+  .guide-tabs button { min-height: 36px; padding-bottom: 6px; font-size: 21px; }
+  .guide-content { min-height: 110px; font-size: 14px; line-height: 1.5; }
+  .guide-content p { margin-bottom: 10px; }
+  .guide-grades { grid-template-columns: repeat(3, 1fr); margin: 10px 0; gap: 4px 18px; }
+  .guide-grades > div { min-height: 32px; padding-bottom: 3px; }
+  .guide-source { margin-top: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .omikuji-guide[open] { animation: none; } }
 .main-composition { display: grid; place-items: center; flex: 1; min-height: 0; width: 100%; }
 .ritual { display: grid; grid-template-rows: minmax(0, 1fr) 145px; gap: 12px; width: min(100%, 660px); height: min(100%, 790px); min-height: 0; }
 .fortune-stage { position: relative; isolation: isolate; width: 100%; height: 100%; min-height: 0; overflow: visible; }
@@ -184,6 +234,7 @@ button:focus-visible { outline: 2px solid var(--fortune-accent, var(--color-verm
   .impact-ring { width: 300px; height: 300px; left: -150px; top: -150px; }
 }
 @media (max-height: 740px) and (orientation: portrait) {
+  .guide-trigger { top: max(8px, env(safe-area-inset-top)); }
   .app-shell { padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
   .site-header { flex-basis: 36px; }
   .brand img { width: 34px; height: 34px; }

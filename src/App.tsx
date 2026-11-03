@@ -5,6 +5,7 @@ import { FortuneBox } from './components/FortuneBox'
 import { FoldingPaper } from './components/FoldingPaper'
 import { RitualEffects } from './components/RitualEffects'
 import { OmikujiRack } from './components/OmikujiRack'
+import { OmikujiGuide } from './components/OmikujiGuide'
 import { AgainIcon, SaveIcon, ShareIcon, SparkIcon } from './components/Icons'
 import { drawFortune, fortuneColors } from './data/fortunes'
 import type { Fortune } from './data/fortunes'
@@ -262,6 +263,7 @@ export default function App() {
 
   return (
     <div className={`app-shell phase-${phase}`} style={sceneStyle}>
+      <OmikujiGuide busy={stage === 'reveal' || isTying} />
       <motion.div className="summon-veil" aria-hidden="true" initial={{ opacity: 0 }}
         animate={{ opacity: !reduceMotion && phase === 'suspend' ? 0.96 : 0 }}
         transition={{ duration: phase === 'suspend' ? 0.28 : 0.55 }} />
